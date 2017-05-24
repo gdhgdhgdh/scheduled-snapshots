@@ -17,7 +17,7 @@ def bash(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     return process.communicate()[0].decode('utf-8')
 
-def getOurSnapshots():
+def getOurSnapshots(roleName,envName):
     """
         Return a list of snapshot Dicts created with this plugin.
     """
@@ -127,6 +127,6 @@ if __name__ == '__main__':
     # Delete snapshots older than expiry-days
     if args.delete_old:
         print("Deleting old snapshots...")
-        deleteOldSnapshots(getOurSnapshots(), args.expiry_days)
+        deleteOldSnapshots(getOurSnapshots(args.role_name,args.env_name), args.expiry_days)
 
     print("Processing completed. See ssbackup.log for more details.")
