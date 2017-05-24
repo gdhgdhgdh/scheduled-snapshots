@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # Create the snapshots
     if len(volumeIds):
         print("Creating snapshots...");
-        snapshots = createSnapshots(volumeIds)
+        snapshots = createSnapshots(volumeIds,args.role_name,args.env_name)
         pass
 
     # Delete snapshots older than expiry-days
