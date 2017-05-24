@@ -13,8 +13,6 @@ import json
 import logging
 import time, datetime, dateutil.parser
 
-profile = 'ssbackup'       # Your AWS CLI profile
-
 def bash(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     return process.communicate()[0].decode('utf-8')
@@ -25,8 +23,7 @@ def getOurSnapshots():
     """
     return json.loads(bash([
             "aws", "ec2", "describe-snapshots",
-            "--filters", "Name=tag-key,Values=Group", "Name=tag-value,Values=ssbackup",
-            "--profile", profile
+            "--filters", "Name=tag-key,Values=Group", "Name=tag-value,Values=ssbackup"
         ]))['Snapshots']
 
 def createSnapshots(volumeIds):
@@ -49,7 +46,7 @@ def createSnapshots(volumeIds):
         for snapshot in snapshots:
             bashCmd.append(snapshot['SnapshotId'])
 
-        bashCmd += ["--tags", "Key=Name,Value='Backup "+date+"'", "Key=Group,Value=ssbackup","--profile", profile]
+        bashCmd += ["--tags", "Key=Name,Value='Backup "+date+"'", "Key=Group,Value=ssbackup"]
         response = bash(bashCmd)
 
         if response.strip() == "":
@@ -76,8 +73,7 @@ def createSnapshotForVolume(volumeId):
     response = json.loads(bash([
         "aws", "ec2", "create-snapshot",
         "--volume-id", volumeId,
-        "--description", "Backup "+date,
-        "--profile", profile
+        "--description", "Backup "+date
     ]))
     message += response['SnapshotId']
     logging.info(message)
@@ -99,8 +95,7 @@ def deleteOldSnapshots(snapshots, max_age):
             message = "Deleting snapshot "+snapshot['SnapshotId']+" ("+str(dateDiff.days)+" days old)... "
             response = bash([
                 "aws", "ec2", "delete-snapshot",
-                "--snapshot-id", snapshot['SnapshotId'],
-                "--profile", profile
+                "--snapshot-id", snapshot['SnapshotId']
             ])
             message += response
             logging.info(message)
