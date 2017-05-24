@@ -23,7 +23,9 @@ def getOurSnapshots():
     """
     return json.loads(bash([
             "aws", "ec2", "describe-snapshots",
-            "--filters", "Name=tag-key,Values=Group", "Name=tag-value,Values=ssbackup"
+            "--filters", "Name=tag-key,Values=Group", "Name=tag-value,Values=ssbackup",
+                         "Name=tag-key,Values=Role", "Name=tag-value,Values=" + roleName,
+                         "Name=tag-key,Values=Environment", "Name=tag-value,Values=" + envName
         ]))['Snapshots']
 
 def createSnapshots(volumeIds,roleName,envName):
@@ -36,7 +38,7 @@ def createSnapshots(volumeIds,roleName,envName):
     # Create the snapshots
     snapshots = []
     for volumeId in volumeIds:
-        snapshots.append(createSnapshotForVolume(volumeId))
+        snapshots.append(createSnapshotForVolume(volumeId,roleName,envName))
 
     # Add Name and Group tags to the snapshot
     if len(snapshots):
@@ -63,7 +65,7 @@ def createSnapshots(volumeIds,roleName,envName):
 
     return False
 
-def createSnapshotForVolume(volumeId):
+def createSnapshotForVolume(volumeId, roleName, envName):
     """
         Return a Dict of a created snapshot for the given EBS volume
 
@@ -76,7 +78,7 @@ def createSnapshotForVolume(volumeId):
     response = json.loads(bash([
         "aws", "ec2", "create-snapshot",
         "--volume-id", volumeId,
-        "--description", "Backup "+date
+        "--description", "Backup "+roleName+" "+envName+" on "+date
     ]))
     message += response['SnapshotId']
     logging.info(message)
