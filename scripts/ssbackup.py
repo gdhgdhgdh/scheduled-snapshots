@@ -26,7 +26,7 @@ def getOurSnapshots():
             "--filters", "Name=tag-key,Values=Group", "Name=tag-value,Values=ssbackup"
         ]))['Snapshots']
 
-def createSnapshots(volumeIds):
+def createSnapshots(volumeIds,roleName,envName):
     """
         Return True if snapshots of the given volumes are created, else False
 
@@ -46,7 +46,10 @@ def createSnapshots(volumeIds):
         for snapshot in snapshots:
             bashCmd.append(snapshot['SnapshotId'])
 
-        bashCmd += ["--tags", "Key=Name,Value='Backup "+date+"'", "Key=Group,Value=ssbackup"]
+        bashCmd += ["--tags", "Key=Name,Value='Backup "+date+"'", "Key=Group,Value=ssbackup",
+                              "Key=Role,Value=" + roleName,
+                              "Key=Environment,Value=" + envName
+        ]
         response = bash(bashCmd)
 
         if response.strip() == "":
@@ -103,6 +106,8 @@ def deleteOldSnapshots(snapshots, max_age):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AWS EBS snapshot utility')
     parser.add_argument('-i','--volume-ids', help='EBS volume ID', required=True)
+    parser.add_argument('-r','--role-name', help='Role Name', required=True)
+    parser.add_argument('-e','--env-name', help='Environment Name', required=True)
     parser.add_argument('-d','--delete-old', help='Delete old snapshots?', required=False, type=bool, default=True)
     parser.add_argument('-x','--expiry-days', help='Number of days to keep snapshots', required=False, type=int, default=7)
     args = parser.parse_args()
